@@ -1,3 +1,62 @@
+# ComfyUI-Impact-Pack - Person Detailer fork
+
+A fork of [ltdrdata/ComfyUI-Impact-Pack](https://github.com/ltdrdata/ComfyUI-Impact-Pack) that adds **Person nodes**: pick specific people out of a group photo and redraw only them, instead of detailing everyone in the image. Pick them by number, by gender, by character name, or by a plain-language description such as "the man wearing a denim jacket".
+
+Everything else in this pack is unchanged from upstream - the original README follows below.
+
+## What this fork adds
+
+  * **Selective detailing.** `Person Detector (SEGS)` numbers everyone in the image; `Person Selector` keeps the people you asked for and outputs their regions as SEGS for the pack's existing `Detailer (SEGS)`.
+  * **Four ways to select.** Index (`2`, `1,3`, `2-4`, `-1` for the last), gender, character name, or free-text description - and they combine.
+  * **Face or whole body.** Separate `face_SEGS` and `person_SEGS` outputs, so you can retouch a face or change someone's clothes, hair and pose.
+  * **No extra VLM download.** Name and description matching runs on the Qwen3-VL text encoder a Krea 2 workflow already has loaded.
+  * **Built for real group photos.** Handles people at different depths, overlapping bodies and partly hidden faces: background bystanders and blurry faces are filtered out, numbering falls back from face to head to body, and each person's mask excludes the other numbered people so a redraw doesn't bleed onto a neighbour.
+  * **Optional refinements.** Instance segmentation (`SEGM_DETECTOR`) or SAM for silhouette-accurate body masks, and a dedicated anime person/head detector for illustrated images.
+
+## Requirements
+
+  * [ComfyUI-Impact-Subpack](https://github.com/ltdrdata/ComfyUI-Impact-Subpack) for `UltralyticsDetectorProvider`, plus the models `segm/person_yolov8m-seg.pt` and `bbox/face_yolov8m.pt` in `models/ultralytics/`.
+  * Optional, for `gender` / `description` / character names: a Krea 2 text encoder (`CLIPLoader` with `type` = `krea2`, e.g. `qwen3vl_4b_fp8_scaled.safetensors`).
+  * Optional, for anime and illustrated images: `bbox/person_detect_v1.1_m.pt` and `bbox/head_detect_v2.0_s_yv11.pt` from [deepghs](https://huggingface.co/deepghs) (MIT). Add their filenames to `ComfyUI/user/default/ComfyUI-Impact-Subpack/model-whitelist.txt`.
+  * Optional, for silhouette-accurate body masks: any SAM model via `SAMLoader` (e.g. `sams/sam_vit_b_01ec64.pth`).
+
+Installation is the same as upstream - see [How To Install](#how-to-install).
+
+## Quick start
+
+Load `example_workflows/person_detailer.json`. It wires the graph below and shows both a face branch and a whole-body branch:
+
+```
+UltralyticsDetectorProvider (person) ─┐
+UltralyticsDetectorProvider (face) ───┼─> Person Detector (SEGS) ─persons─> Person Selector ─face_SEGS──> Detailer (SEGS)
+LoadImage ────────────────────────────┘                    (same image) ─┘  └person_SEGS─> Detailer (SEGS)
+```
+
+  1. Connect the **same image** to `Person Detector (SEGS)` and to `Person Selector` - the Selector checks the size and errors out otherwise.
+  2. Say who you want on `Person Selector`: `index` (e.g. `2`), `gender`, and/or `description` (e.g. `the woman in the red apron`). Leave them empty to select everyone.
+  3. to redraw only the selected people's faces, connect `face_SEGS` to `Detailer (SEGS)` (`segs` input). To redraw whole people (clothing, pose, hair, body), connect `person_SEGS` instead. For whole-body redraws connect `person_segm_detector` and/or `sam_model` on `Person Detector (SEGS)` so the mask follows the person's silhouette instead of a rectangle; a `denoise` around 0.5–0.6 changes clothing noticeably and also changes the selected person's own face, so run a separate face pass afterwards if the face must be preserved. `example_workflows/person_detailer.json` includes both a face branch and a whole-body branch.
+  4. Check the `preview` output of either node to see the numbering and the masks, and `debug_text` on the Selector for detection counts and what the VLM answered.
+
+## Person nodes reference
+
+  * `Person Detector (SEGS)` - Detects every person and every face in the image, associates each face with the body it belongs to (or synthesizes an approximate body box for an orphan face), excludes people who are too small, too far in the background, or too blurry, and numbers the rest left-to-right (configurable via `sort_by`).
+    * Required: `image`, `person_detector` and `face_detector` (both `BBOX_DETECTOR`, e.g. `UltralyticsDetectorProvider` with `segm/person_yolov8m-seg.pt` and `bbox/face_yolov8m.pt`). One shared `threshold` applies to all connected detectors (body, SEGM, extra person, head, face).
+    * Optional `person_segm_detector` (`SEGM_DETECTOR`, e.g. the `SEGM_DETECTOR` output of the same `UltralyticsDetectorProvider` used for `person_detector`): when connected, body detection switches to instance segmentation, so each person's full-body region is their actual silhouette instead of a rectangle; it replaces `person_detector`, which is then ignored.
+    * Optional `extra_person_detector` (`BBOX_DETECTOR`) and `head_detector` (`BBOX_DETECTOR`): `extra_person_detector` is an additional body detector run first (recommended: `bbox/person_detect_v1.1_m.pt` for anime/illustrated people); `person_segm_detector`/`person_detector` boxes only backfill people it missed. `head_detector` (recommended: `bbox/head_detect_v2.0_s_yv11.pt`) detects heads and anchors numbering, preview labels and SAM prompts for people whose face isn't visible; when connected, it also changes what `min_relative_size` compares. Both models are from Hugging Face user [deepghs](https://huggingface.co/deepghs) (MIT license) - download them into `models/ultralytics/bbox/` and add their filenames to `ComfyUI/user/default/ComfyUI-Impact-Subpack/model-whitelist.txt` so `UltralyticsDetectorProvider` will load them.
+    * Optional `sam_model` (`SAM_MODEL`): runs SAM once per numbered person to refine their body mask, using that person's face (or head, if no face is visible) as the positive point and the faces (or heads) of other people whose face falls inside their body box as negative points; a negative point that falls inside the person's own face/head region is skipped so SAM isn't told to exclude the person's own face.
+    * Exclusion thresholds and defaults: `min_person_ratio` 0.015 (body box area vs. whole image), `min_relative_size` 0.31 (filters background bystanders - decided per person: head short side vs. the largest head's if a head was detected for that person, else face short side vs. the largest face's, else sqrt of body area vs. the largest person's), `min_face_size` 24px (face box short side), `min_sharpness` 0 = off (Laplacian variance of the face crop, filters blurry background people).
+    * Saved v1 workflows keep their old widget values (`min_person_ratio` 0.02, `min_relative_size` 0.25); with the new linear size measure, update them to 0.015 / 0.31.
+    * Outputs `persons` (`PERSONS`, feeds `Person Selector`) and `preview` (`IMAGE`): each numbered person's full-body mask is overlaid on the image, semi-transparent, tinted with that person's number color, with the number label placed above their face (or head); a numbered person's mask automatically removes the (15%-expanded) face region - or head region, when the face isn't visible - of every other *numbered* person, so overlapping bodies don't bleed into each other; excluded people are not subtracted. Excluded people get a gray box instead of a mask, tagged `xS` (small), `xBG` (background), `xF` (tiny face) or `xB` (blurry).
+    * Numbering (`sort_by`): the default `left_to_right` orders people by their face center, falling back to head center when there's no face, and to body-box center when there's neither.
+  * `Person Selector` - Selects a subset of the numbered people from `Person Detector (SEGS)` and outputs their face and body regions as SEGS, ready for `Detailer (SEGS)`.
+    * `index`: comma-separated numbers starting at 1, e.g. `2`, `1,3`, `2-4`, or `-1` for the last person; empty selects everyone.
+    * `gender` (`any`/`male`/`female`) and `description` (free text, or a character name for a fictional character - real people are matched by description, not identified by name) require a Krea 2 text encoder connected to `clip` (`CLIPLoader` with `type` set to `krea2`, e.g. `qwen3vl_4b_fp8_scaled.safetensors`); it draws numbered boxes on the image and asks the VLM to pick matching numbers. Optional `verify` re-checks each pick on its own crop - with every other person's body mask painted gray so the VLM only looks at the picked person - and keeps only those above `verify_threshold`.
+    * `image` must be the exact same image connected to `Person Detector (SEGS)` - the node checks the size and raises an error otherwise.
+    * Outputs `face_SEGS`/`person_SEGS` (selected) and `remained_face_SEGS`/`remained_person_SEGS` (everyone numbered but not selected), a `preview` IMAGE, and a `debug_text` STRING with the detection/exclusion counts and VLM reasoning.
+    * Caveats: people excluded by `Person Detector (SEGS)` appear in neither the selected nor the remained SEGS - they are dropped entirely. `face_SEGS` and `person_SEGS` are not positionally aligned when a selected person has no detected face (that person is simply missing from `face_SEGS`).
+
+---
+
 [![Youtube Badge](https://img.shields.io/badge/Youtube-FF0000?style=for-the-badge&logo=Youtube&logoColor=white&link=https://www.youtube.com/watch?v=AccoxDZIg3Y&list=PL_Ej2RDzjQLGfEeizq4GISeY3FtVyFmGP)](https://www.youtube.com/watch?v=AccoxDZIg3Y&list=PL_Ej2RDzjQLGfEeizq4GISeY3FtVyFmGP)
 
 # ComfyUI-Impact-Pack
@@ -129,6 +188,9 @@ NOTE: The UltralyticsDetectorProvider node is not part of the ComfyUI-Impact-Pac
   * `FromDetailer (SDXL/pipe)`, `BasicPipe -> DetailerPipe (SDXL)`, `Edit DetailerPipe (SDXL)` - These are pipe functions used in Detailer for utilizing the refiner model of SDXL.
   * `Any PIPE -> BasicPipe` - Convert the PIPE Value of other custom nodes that are not BASIC_PIPE but internally have the same structure as BASIC_PIPE to BASIC_PIPE. If an incompatible type is applied, it may cause runtime errors.
 
+
+### Person nodes
+See [Person nodes](#person-nodes) at the top of this README.
 
 ### SEGS Manipulation nodes
   * `SEGSDetailer` - Performs detailed work on SEGS without pasting it back onto the original image.

@@ -1,0 +1,87 @@
+{
+  "fixtures": [
+    {
+      "name": "real_01",
+      "file": "real_01.png",
+      "style": "realistic",
+      "seed": 1001,
+      "prompt": "A realistic full-body photo of four adults standing side by side in a single row on a city sidewalk, all facing the camera, evenly spaced, not overlapping, sharp focus, daylight, 35mm photo. From left to right: a young woman with a short black bob haircut wearing a red jacket and jeans; a tall man with a buzz cut wearing a navy blue suit; an elderly woman with long gray hair wearing a yellow dress; a young man with curly brown hair wearing a green hoodie and black glasses.",
+      "people": [
+        {"pos": 1, "gender": "female", "desc": "short black bob hair, red jacket"},
+        {"pos": 2, "gender": "male", "desc": "buzz cut, navy blue suit"},
+        {"pos": 3, "gender": "female", "desc": "elderly, long gray hair, yellow dress"},
+        {"pos": 4, "gender": "male", "desc": "curly brown hair, green hoodie, glasses"}
+      ],
+      "cases": [
+        {"name": "index 2", "index": "2", "gender": "any", "description": "", "expected": [2]},
+        {"name": "last", "index": "-1", "gender": "any", "description": "", "expected": [4]},
+        {"name": "males", "index": "", "gender": "male", "description": "", "expected": [2, 4]},
+        {"name": "females", "index": "", "gender": "female", "description": "", "expected": [1, 3]},
+        {"name": "red jacket", "index": "", "gender": "any", "description": "the person wearing a red jacket", "expected": [1]},
+        {"name": "glasses", "index": "", "gender": "any", "description": "the person wearing glasses", "expected": [4]},
+        {"name": "gray hair woman", "index": "", "gender": "female", "description": "long gray hair", "expected": [3]},
+        {"name": "male in first three", "index": "1-3", "gender": "male", "description": "", "expected": [2]}
+      ]
+    },
+    {
+      "name": "real_02",
+      "file": "real_02.png",
+      "style": "realistic",
+      "seed": 1002,
+      "prompt": "A realistic full-body photo of five people standing side by side in a single row in a bright modern office, all facing the camera, evenly spaced, not overlapping, sharp focus. From left to right: a man with a thick dark beard wearing a white shirt; a woman with a blonde ponytail wearing a black blazer; a little girl about seven years old wearing a pink dress; a bald man wearing an orange t-shirt; a woman with long red hair wearing a purple sweater.",
+      "people": [
+        {"pos": 1, "gender": "male", "desc": "thick dark beard, white shirt"},
+        {"pos": 2, "gender": "female", "desc": "blonde ponytail, black blazer"},
+        {"pos": 3, "gender": "female", "desc": "little girl, pink dress"},
+        {"pos": 4, "gender": "male", "desc": "bald, orange t-shirt"},
+        {"pos": 5, "gender": "female", "desc": "long red hair, purple sweater"}
+      ],
+      "cases": [
+        {"name": "males", "index": "", "gender": "male", "description": "", "expected": [1, 4]},
+        {"name": "child", "index": "", "gender": "any", "description": "the child", "expected": [3]},
+        {"name": "bald man", "index": "", "gender": "any", "description": "the bald man", "expected": [4]},
+        {"name": "blonde ponytail", "index": "", "gender": "any", "description": "woman with a blonde ponytail", "expected": [2]},
+        {"name": "index 2,5", "index": "2,5", "gender": "any", "description": "", "expected": [2, 5]}
+      ]
+    },
+    {
+      "name": "anime_01",
+      "file": "anime_01.png",
+      "style": "anime",
+      "seed": 2101,
+      "prompt": "Anime illustration, clean cel shading, four characters standing side by side in a single row on a school rooftop, full body, facing the viewer, evenly spaced, not overlapping. From left to right: a girl with long orange hair in a single side braid wearing a green hoodie and denim shorts; a boy with spiky blond hair wearing an orange jacket; a girl with short pink hair wearing a sailor school uniform; a tall man with long black hair wearing a black cloak.",
+      "people": [
+        {"pos": 1, "gender": "female", "desc": "long orange hair in a side braid, green hoodie, denim shorts"},
+        {"pos": 2, "gender": "male", "desc": "spiky blond hair, orange jacket"},
+        {"pos": 3, "gender": "female", "desc": "short pink hair, sailor uniform"},
+        {"pos": 4, "gender": "male", "desc": "long black hair, black cloak"}
+      ],
+      "cases": [
+        {"name": "first woman from left", "index": "", "gender": "any", "description": "the first woman from the left", "expected": [1]},
+        {"name": "males", "index": "", "gender": "male", "description": "", "expected": [2, 4]},
+        {"name": "pink hair", "index": "", "gender": "any", "description": "the character with pink hair", "expected": [3]},
+        {"name": "black cloak", "index": "", "gender": "any", "description": "the one wearing a black cloak", "expected": [4]}
+      ]
+    },
+    {
+      "name": "anime_02",
+      "file": "anime_02.png",
+      "style": "anime",
+      "seed": 2002,
+      "prompt": "Anime illustration, detailed, four characters standing side by side in a single row in a festival street at dusk, full body, facing the viewer, evenly spaced, not overlapping. From left to right: a girl with long silver hair wearing a blue kimono; a boy with messy black hair wearing a white shirt; a girl with twin hair buns wearing a red chinese dress; a girl with a brown ponytail wearing a maid outfit.",
+      "people": [
+        {"pos": 1, "gender": "male", "desc": "background passer-by at the left edge, short dark hair, grayish short-sleeve shirt, dark trousers, back to viewer, blurred"},
+        {"pos": 2, "gender": "female", "desc": "long silver hair, blue kimono"},
+        {"pos": 3, "gender": "male", "desc": "messy black hair, white shirt"},
+        {"pos": 4, "gender": "female", "desc": "twin buns, red chinese dress"},
+        {"pos": 5, "gender": "female", "desc": "brown ponytail, maid outfit"}
+      ],
+      "cases": [
+        {"name": "male", "index": "", "gender": "male", "description": "", "expected": [3]},
+        {"name": "kimono", "index": "", "gender": "any", "description": "the girl in a kimono", "expected": [2]},
+        {"name": "maid", "index": "", "gender": "any", "description": "the one in a maid outfit", "expected": [5]},
+        {"name": "second from right", "index": "-2", "gender": "any", "description": "", "expected": [4]}
+      ]
+    }
+  ]
+}

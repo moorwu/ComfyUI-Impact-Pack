@@ -10,3 +10,4 @@ impact_subpack
 !requirements.txt
 !LICENSE.txt
 .claude/
+tests/person_e2e/out/

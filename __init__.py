@@ -54,6 +54,7 @@ from .modules.impact.bridge_nodes import *      # noqa: F403
 from .modules.impact.hook_nodes import *        # noqa: F403
 from .modules.impact.animatediff_nodes import * # noqa: F403
 from .modules.impact.segs_upscaler import *     # noqa: F403
+from .modules.impact.person_nodes import *      # noqa: F403
 
 import threading
 
@@ -291,7 +292,10 @@ NODE_CLASS_MAPPINGS = {
     "ImpactSEGSClassify": SEGS_Classify, # noqa: F405
 
     "ImpactSchedulerAdapter": ImpactSchedulerAdapter, # noqa: F405
-    "GITSSchedulerFuncProvider": GITSSchedulerFuncProvider # noqa: F405
+    "GITSSchedulerFuncProvider": GITSSchedulerFuncProvider, # noqa: F405
+
+    "ImpactPersonDetectorSEGS": PersonDetectorSEGS, # noqa: F405
+    "ImpactPersonSelector": PersonSelector, # noqa: F405
 }
 
 
@@ -442,7 +446,10 @@ NODE_DISPLAY_NAME_MAPPINGS = {
 
     "ImpactSchedulerAdapter": "Impact Scheduler Adapter",
     "GITSSchedulerFuncProvider": "GITSScheduler Func Provider",
-    "ImpactNegativeConditioningPlaceholder": "Negative Cond Placeholder"
+    "ImpactNegativeConditioningPlaceholder": "Negative Cond Placeholder",
+
+    "ImpactPersonDetectorSEGS": "Person Detector (SEGS)",
+    "ImpactPersonSelector": "Person Selector",
 }
 
 

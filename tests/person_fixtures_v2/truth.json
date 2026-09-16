@@ -1,0 +1,158 @@
+{
+  "fixtures": [
+    {
+      "name": "real_01", "file": "real_01.png", "style": "realistic", "seed": 3001,
+      "prompt": "A candid realistic photo of a couple on a beach at golden hour, medium-wide shot, natural and unposed. On the left, a man with short black hair wearing a white linen shirt stands with his back turned to the camera, his face not visible. On the right, a woman with long wavy brown hair wearing a yellow sundress hugs him, her chin resting on his shoulder, facing the camera and smiling. Her body is partly hidden behind him. Sharp focus, 35mm film look.",
+      "people": [
+        {"key": "man_white_shirt", "gender": "male", "desc": "short black hair, white linen shirt, back to camera", "face_visible": false, "occluded": true},
+        {"key": "woman_yellow_dress", "gender": "female", "desc": "long wavy brown hair, yellow sundress, hugging him", "face_visible": true, "occluded": true}
+      ],
+      "cases": [
+        {"name": "index 1", "index": "1", "gender": "any", "description": "", "expect_pos": [1]},
+        {"name": "woman", "index": "", "gender": "female", "description": "", "expect": ["woman_yellow_dress"], "expect_face": true},
+        {"name": "man in white shirt", "index": "", "gender": "any", "description": "the man in the white shirt", "expect": ["man_white_shirt"], "expect_face": false},
+        {"name": "yellow dress", "index": "", "gender": "any", "description": "the person in the yellow dress", "expect": ["woman_yellow_dress"]}
+      ]
+    },
+    {
+      "name": "real_02", "file": "real_02.png", "style": "realistic", "seed": 3002,
+      "prompt": "A candid realistic photo inside a cozy cafe, four friends at different distances from the camera, overlapping naturally. In the left foreground and closest to the camera, a young man with a short beard wearing a green flannel shirt sits sideways at a table, shown in profile looking to the right. In the middle ground, a woman with a blonde pixie cut wearing a black turtleneck stands with her arm over the shoulders of a man with curly red hair wearing a denim jacket, both laughing. Far in the background on the right, a woman with a long black braid wearing a red apron stands behind the counter, small in the frame but facing the camera.",
+      "people": [
+        {"key": "man_green_flannel", "gender": "male", "desc": "short beard, green flannel shirt, sitting at the table in the left foreground, seen from behind-side in profile looking right", "face_visible": true, "occluded": false},
+        {"key": "woman_blonde_pixie", "gender": "female", "desc": "blonde pixie cut, black turtleneck, arm over his shoulders", "face_visible": true, "occluded": true},
+        {"key": "man_denim_jacket", "gender": "male", "desc": "curly red hair, denim jacket", "face_visible": true, "occluded": true},
+        {"key": "woman_red_apron", "gender": "female", "desc": "long black braid, white top, red apron, behind the counter in the background", "face_visible": true, "occluded": true}
+      ],
+      "cases": [
+        {"name": "index 2", "index": "2", "gender": "any", "description": "", "expect_pos": [2]},
+        {"name": "males", "index": "", "gender": "male", "description": "", "expect": ["man_green_flannel", "man_denim_jacket"]},
+        {"name": "denim jacket man", "index": "", "gender": "any", "description": "the man wearing a denim jacket", "expect": ["man_denim_jacket"], "expect_face": true},
+        {"name": "barista in background", "index": "", "gender": "any", "description": "the woman in the red apron in the background", "expect": ["woman_red_apron"]},
+        {"name": "profile", "index": "", "gender": "any", "description": "the person sitting in profile at the table", "expect": ["man_green_flannel"]}
+      ]
+    },
+    {
+      "name": "real_03", "file": "real_03.png", "style": "realistic", "seed": 3003,
+      "prompt": "A candid realistic photo of a family picnic in a sunny park, six people at different depths and heights, natural and unposed. From left to right: an elderly man with white hair wearing a gray cardigan sits on a folding chair in the foreground; a teenage girl with a high ponytail wearing an orange hoodie stands behind his chair, partly hidden by it; a woman wearing a wide blue sun hat kneels on a checkered picnic blanket in the middle; a little boy in a red and white striped t-shirt runs away from the camera toward the trees, seen from behind; a man with glasses wearing a maroon polo shirt crouches beside the blanket; a young woman with short purple hair wearing a denim jacket stands at the right edge, farther from the camera.",
+      "people": [
+        {"key": "old_man_cardigan", "gender": "male", "desc": "white hair, gray cardigan, sitting on a folding chair", "face_visible": true, "occluded": false},
+        {"key": "girl_orange_hoodie", "gender": "female", "desc": "high ponytail, orange hoodie, behind the chair", "face_visible": true, "occluded": true},
+        {"key": "woman_blue_hat", "gender": "female", "desc": "wide blue sun hat, kneeling on the blanket", "face_visible": true, "occluded": false},
+        {"key": "boy_striped_back", "gender": "male", "desc": "red and white striped t-shirt, jeans, running away from the camera toward the family, back to camera", "face_visible": false, "occluded": false},
+        {"key": "man_glasses_polo", "gender": "male", "desc": "glasses, maroon polo shirt, crouching", "face_visible": true, "occluded": true},
+        {"key": "woman_purple_hair", "gender": "female", "desc": "short purple hair, denim jacket, standing at the right edge", "face_visible": true, "occluded": false}
+      ],
+      "cases": [
+        {"name": "last", "index": "-1", "gender": "any", "description": "", "expect_pos": [6]},
+        {"name": "running child", "index": "", "gender": "any", "description": "the child running away from the camera", "expect": ["boy_striped_back"], "expect_face": false},
+        {"name": "glasses man", "index": "", "gender": "any", "description": "the man wearing glasses", "expect": ["man_glasses_polo"], "expect_face": true},
+        {"name": "females", "index": "", "gender": "female", "description": "", "expect": ["girl_orange_hoodie", "woman_blue_hat", "woman_purple_hair"]},
+        {"name": "sitting on chair", "index": "", "gender": "any", "description": "the person sitting on a folding chair", "expect": ["old_man_cardigan"]},
+        {"name": "index 2-3", "index": "2-3", "gender": "any", "description": "", "expect_pos": [2, 3]}
+      ]
+    },
+    {
+      "name": "real_04", "file": "real_04.png", "style": "realistic", "seed": 3104,
+      "prompt": "A candid realistic photo of nine friends celebrating graduation on wide university steps, arranged naturally at different depths and heights with some people overlapping, not a formal lineup. On the lowest step in front: a woman with long black hair in a red graduation gown holding a bouquet, a man with a shaved head in a navy gown throwing his cap in the air, and a woman with curly afro hair in a white dress. One step higher behind them: a man with glasses and a beard in a gray suit with his arm around a woman with a blonde bob in a green dress, and a man in a black gown turned away from the camera looking up at the building. On the highest step at the back: a woman wearing a red headscarf, a tall man with long hair tied back in a burgundy hoodie, and a girl with twin braids in a yellow raincoat partly hidden behind the tall man.",
+      "people": [
+        {"key": "man_beard_gray_suit", "gender": "male", "desc": "glasses, beard, gray suit, hand on the shoulder of the woman in the red gown", "face_visible": true, "occluded": true},
+        {"key": "woman_red_gown", "gender": "female", "desc": "long black hair, red graduation gown, bouquet", "face_visible": true, "occluded": false},
+        {"key": "woman_blonde_green", "gender": "female", "desc": "blonde bob, green dress", "face_visible": true, "occluded": true},
+        {"key": "woman_red_headscarf", "gender": "female", "desc": "red headscarf, back row", "face_visible": true, "occluded": true},
+        {"key": "man_burgundy_hoodie", "gender": "male", "desc": "tall, long hair tied back, burgundy hoodie, top of the group", "face_visible": true, "occluded": true},
+        {"key": "man_shaved_navy", "gender": "male", "desc": "shaved head, beard, navy gown, raising his hand toward a cap tossed in the air", "face_visible": true, "occluded": false},
+        {"key": "girl_yellow_raincoat", "gender": "female", "desc": "twin braids, yellow raincoat, back row, lower body hidden behind the men in front", "face_visible": true, "occluded": true},
+        {"key": "man_black_gown_back", "gender": "male", "desc": "beard, black gown, looking up at the building in profile", "face_visible": true, "occluded": true},
+        {"key": "woman_afro_white", "gender": "female", "desc": "curly afro hair, white dress", "face_visible": true, "occluded": false}
+      ],
+      "cases": [
+        {"name": "index 5", "index": "5", "gender": "any", "description": "", "expect_pos": [5]},
+        {"name": "profile graduate", "index": "", "gender": "any", "description": "the man in a black gown looking up in profile", "expect": ["man_black_gown_back"], "expect_face": true},
+        {"name": "headscarf", "index": "", "gender": "any", "description": "the woman wearing a red headscarf", "expect": ["woman_red_headscarf"], "expect_face": true},
+        {"name": "hidden girl", "index": "", "gender": "any", "description": "the girl in the yellow raincoat", "expect": ["girl_yellow_raincoat"]},
+        {"name": "cap thrower", "index": "", "gender": "any", "description": "the man throwing his cap", "expect": ["man_shaved_navy"]},
+        {"name": "gray suit man", "index": "", "gender": "any", "description": "the man in the gray suit with glasses", "expect": ["man_beard_gray_suit"]},
+        {"name": "bouquet woman", "index": "", "gender": "any", "description": "the woman in the red graduation gown holding a bouquet", "expect": ["woman_red_gown"]}
+      ]
+    },
+    {
+      "name": "anime_01", "file": "anime_01.png", "style": "anime", "seed": 4301,
+      "prompt": "Anime illustration, detailed cel shading, a candid slice-of-life scene on a train station platform with three characters at different depths. In the foreground on the left, a girl with long pink hair in a school blazer hugs a girl with short silver hair in a gray hoodie from the side, cheek to cheek, both smiling at the viewer and overlapping. Far in the background on the right, a boy with messy blue hair wearing headphones and a black jacket stands near a vending machine, small in the frame, looking at his phone.",
+      "people": [
+        {"key": "girl_pink_blazer", "gender": "female", "desc": "long pink hair, school blazer, red bow, being hugged", "face_visible": true, "occluded": true},
+        {"key": "girl_silver_hoodie", "gender": "female", "desc": "short silver hair, gray jacket with white hood, black backpack, hugging her from the side", "face_visible": true, "occluded": false},
+        {"key": "boy_blue_headphones", "gender": "male", "desc": "messy blue hair, headphones, black jacket, standing in the background looking at his phone", "face_visible": true, "occluded": false}
+      ],
+      "cases": [
+        {"name": "index 3", "index": "3", "gender": "any", "description": "", "expect_pos": [3]},
+        {"name": "boy in background", "index": "", "gender": "male", "description": "", "expect": ["boy_blue_headphones"], "expect_face": true},
+        {"name": "silver hair", "index": "", "gender": "any", "description": "the girl with short silver hair", "expect": ["girl_silver_hoodie"]},
+        {"name": "pink hair", "index": "", "gender": "any", "description": "the girl with long pink hair", "expect": ["girl_pink_blazer"]}
+      ]
+    },
+    {
+      "name": "anime_02", "file": "anime_02.png", "style": "anime", "seed": 4002,
+      "prompt": "Anime illustration, bright colors, five students on a school rooftop during lunch break, a natural candid composition with different poses and depths. From left to right: a boy with spiky orange hair sits on the ground eating bread; a girl with twin tails and a red ribbon stands leaning over him; a tall boy with black hair leans on the railing with his back to the viewer, looking at the city; a girl with glasses and a brown bob sits on a bench reading a book, partly hidden behind the tall boy; a small girl with green hair in a yellow cardigan waves at the viewer from further away near the door.",
+      "people": [
+        {"key": "boy_orange_sitting", "gender": "male", "desc": "spiky orange hair, sitting on the ground eating bread", "face_visible": true, "occluded": false},
+        {"key": "girl_twintails_ribbon", "gender": "female", "desc": "light pink twin tails with red ribbons, yellow vest, leaning on the railing with her back to the viewer", "face_visible": false, "occluded": true},
+        {"key": "boy_black_back", "gender": "male", "desc": "tall, black hair, leaning on railing, back to viewer", "face_visible": false, "occluded": false},
+        {"key": "girl_glasses_book", "gender": "female", "desc": "glasses, brown bob, sitting on a bench reading a book, right of the tall boy", "face_visible": true, "occluded": false},
+        {"key": "girl_green_far", "gender": "female", "desc": "green hair, yellow cardigan, waving, far near the door", "face_visible": true, "occluded": false}
+      ],
+      "cases": [
+        {"name": "index 4", "index": "4", "gender": "any", "description": "", "expect_pos": [4]},
+        {"name": "boy at railing", "index": "", "gender": "any", "description": "the boy leaning on the railing with his back to the viewer", "expect": ["boy_black_back"], "expect_face": false},
+        {"name": "reading girl", "index": "", "gender": "any", "description": "the girl reading a book", "expect": ["girl_glasses_book"], "expect_face": true},
+        {"name": "males", "index": "", "gender": "male", "description": "", "expect": ["boy_orange_sitting", "boy_black_back"]},
+        {"name": "waving girl", "index": "", "gender": "any", "description": "the girl waving at the viewer", "expect": ["girl_green_far"]}
+      ]
+    },
+    {
+      "name": "anime_03", "file": "anime_03.png", "style": "anime", "seed": 4003,
+      "prompt": "Anime illustration, summer festival at night with glowing lanterns, seven friends posing casually for a snapshot at different depths, overlapping, arms over shoulders, not in a straight line. In front: a boy with short brown hair in a blue yukata making a peace sign, with his arm over the shoulders of a girl with long black hair in a purple yukata; a girl with blonde twin buns in a pink yukata crouching at the front right holding a goldfish bag. Behind them: a tall boy with white hair in a gray yukata, a girl with a short red bob wearing a fox mask pushed up on her head, and a boy with green hair turned sideways buying takoyaki at a stall. At the very back, partly hidden: a girl with light blue hair in a white yukata peeking out between the tall boy and the red-haired girl.",
+      "people": [
+        {"key": "boy_brown_blue_yukata", "gender": "male", "desc": "short brown hair, blue yukata, peace sign, arm over her shoulders", "face_visible": true, "occluded": false},
+        {"key": "girl_black_purple_yukata", "gender": "female", "desc": "long black hair, purple yukata", "face_visible": true, "occluded": true},
+        {"key": "boy_white_hair_gray", "gender": "male", "desc": "tall, white hair, gray yukata", "face_visible": true, "occluded": true},
+        {"key": "girl_lightblue_peeking", "gender": "female", "desc": "light blue hair with bangs covering her eyes, white yukata, peeking from between the tall boy and the red-haired girl", "face_visible": true, "occluded": true},
+        {"key": "girl_blonde_buns_pink", "gender": "female", "desc": "blonde twin buns with pink tips, pink yukata, crouching in front, goldfish bag", "face_visible": true, "occluded": false},
+        {"key": "girl_red_bob_fox_mask", "gender": "female", "desc": "short red bob, fox mask on head", "face_visible": true, "occluded": true},
+        {"key": "boy_green_sideways", "gender": "male", "desc": "green hair, dark green yukata, turned sideways in profile holding takoyaki", "face_visible": true, "occluded": false},
+        {"key": "boy_takoyaki_vendor", "gender": "male", "desc": "short brown hair, green striped yukata, takoyaki vendor behind the stall at the right", "face_visible": true, "occluded": true}
+      ],
+      "cases": [
+        {"name": "index 1", "index": "1", "gender": "any", "description": "", "expect_pos": [1]},
+        {"name": "fox mask", "index": "", "gender": "any", "description": "the girl with a fox mask on her head", "expect": ["girl_red_bob_fox_mask"], "expect_face": true},
+        {"name": "peeking girl", "index": "", "gender": "any", "description": "the girl with light blue hair peeking from behind", "expect": ["girl_lightblue_peeking"]},
+        {"name": "goldfish", "index": "", "gender": "any", "description": "the girl holding a goldfish bag", "expect": ["girl_blonde_buns_pink"]},
+        {"name": "males", "index": "", "gender": "male", "description": "", "expect": ["boy_brown_blue_yukata", "boy_white_hair_gray", "boy_green_sideways", "boy_takoyaki_vendor"]},
+        {"name": "peace sign", "index": "", "gender": "any", "description": "the boy making a peace sign", "expect": ["boy_brown_blue_yukata"]}
+      ]
+    },
+    {
+      "name": "anime_04", "file": "anime_04.png", "style": "anime", "seed": 4004,
+      "prompt": "Anime illustration, a school club group snapshot in a classroom after the cultural festival, ten members arranged casually at different depths and heights, some sitting on desks, some standing, overlapping, not a formal lineup. In front: a girl with long orange hair sitting on a desk swinging her legs; a boy with a buzz cut kneeling on the floor holding a trophy; a girl with a lavender ponytail sitting cross-legged on the floor. Middle: a boy with glasses and neat black hair standing with arms crossed; a girl with a short teal bob giving a thumbs up; a boy with messy blond hair with his back to the viewer writing on the blackboard; a girl with long white hair holding a camera. At the back: a tall boy with red hair standing on a chair and waving; a girl with brown twin braids partly hidden behind him; and a small boy with a gray beanie peeking in from the doorway at the far right.",
+      "people": [
+        {"key": "girl_orange_desk", "gender": "female", "desc": "long orange hair, sitting on a desk", "face_visible": true, "occluded": false},
+        {"key": "boy_glasses_arms_crossed", "gender": "male", "desc": "glasses, neat black hair, arms crossed", "face_visible": true, "occluded": true},
+        {"key": "boy_buzz_trophy", "gender": "male", "desc": "buzz cut, kneeling on one knee, holding a trophy", "face_visible": true, "occluded": false},
+        {"key": "girl_teal_thumbs", "gender": "female", "desc": "short teal bob, thumbs up", "face_visible": true, "occluded": true},
+        {"key": "boy_blond_back_blackboard", "gender": "male", "desc": "messy blond hair, back to viewer, writing on blackboard", "face_visible": false, "occluded": false},
+        {"key": "girl_lavender_floor", "gender": "female", "desc": "lavender ponytail, sitting cross-legged on the floor", "face_visible": true, "occluded": false},
+        {"key": "girl_white_camera", "gender": "female", "desc": "long white hair, holding a camera", "face_visible": true, "occluded": false},
+        {"key": "girl_brown_braids_hidden", "gender": "female", "desc": "brown twin braids, arms crossed, standing in front of and left of the red-haired boy, lower body hidden behind desks", "face_visible": true, "occluded": true},
+        {"key": "boy_red_waving", "gender": "male", "desc": "tall, red hair, one foot up on a chair, waving", "face_visible": true, "occluded": true},
+        {"key": "boy_beanie_doorway", "gender": "male", "desc": "gray beanie, peeking in from the doorway", "face_visible": true, "occluded": true}
+      ],
+      "cases": [
+        {"name": "index 6-7", "index": "6-7", "gender": "any", "description": "", "expect_pos": [6, 7]},
+        {"name": "boy at blackboard", "index": "", "gender": "any", "description": "the boy writing on the blackboard with his back to the viewer", "expect": ["boy_blond_back_blackboard"], "expect_face": false},
+        {"name": "trophy", "index": "", "gender": "any", "description": "the boy holding a trophy", "expect": ["boy_buzz_trophy"], "expect_face": true},
+        {"name": "hidden braids", "index": "", "gender": "any", "description": "the girl with brown twin braids", "expect": ["girl_brown_braids_hidden"]},
+        {"name": "doorway", "index": "", "gender": "any", "description": "the boy peeking in from the doorway", "expect": ["boy_beanie_doorway"]},
+        {"name": "camera girl", "index": "", "gender": "any", "description": "the girl holding a camera", "expect": ["girl_white_camera"]}
+      ]
+    }
+  ]
+}
