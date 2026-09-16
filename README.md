@@ -1,3 +1,5 @@
+**English** | [简体中文](README.zh-CN.md) | [日本語](README.ja.md)
+
 # ComfyUI-Impact-Pack - Person Detailer fork
 
 A fork of [ltdrdata/ComfyUI-Impact-Pack](https://github.com/ltdrdata/ComfyUI-Impact-Pack) that adds **Person nodes**: pick specific people out of a group photo and redraw only them, instead of detailing everyone in the image. Pick them by number, by gender, by character name, or by a plain-language description such as "the man wearing a denim jacket".
@@ -34,7 +36,7 @@ LoadImage ───────────────────────�
 
   1. Connect the **same image** to `Person Detector (SEGS)` and to `Person Selector` - the Selector checks the size and errors out otherwise.
   2. Say who you want on `Person Selector`: `index` (e.g. `2`), `gender`, and/or `description` (e.g. `the woman in the red apron`). Leave them empty to select everyone.
-  3. to redraw only the selected people's faces, connect `face_SEGS` to `Detailer (SEGS)` (`segs` input). To redraw whole people (clothing, pose, hair, body), connect `person_SEGS` instead. For whole-body redraws connect `person_segm_detector` and/or `sam_model` on `Person Detector (SEGS)` so the mask follows the person's silhouette instead of a rectangle; a `denoise` around 0.5–0.6 changes clothing noticeably and also changes the selected person's own face, so run a separate face pass afterwards if the face must be preserved. `example_workflows/person_detailer.json` includes both a face branch and a whole-body branch.
+  3. To redraw only the selected people's faces, connect `face_SEGS` to `Detailer (SEGS)` (`segs` input). To redraw whole people (clothing, pose, hair, body), connect `person_SEGS` instead. For whole-body redraws connect `person_segm_detector` and/or `sam_model` on `Person Detector (SEGS)` so the mask follows the person's silhouette instead of a rectangle; a `denoise` around 0.5–0.6 changes clothing noticeably and also changes the selected person's own face, so run a separate face pass afterwards if the face must be preserved. `example_workflows/person_detailer.json` includes both a face branch and a whole-body branch.
   4. Check the `preview` output of either node to see the numbering and the masks, and `debug_text` on the Selector for detection counts and what the VLM answered.
 
 ## Person nodes reference

@@ -1,0 +1,58 @@
+[English](README.md) | **简体中文** | [日本語](README.ja.md)
+
+# ComfyUI-Impact-Pack - Person Detailer 分支
+
+[ltdrdata/ComfyUI-Impact-Pack](https://github.com/ltdrdata/ComfyUI-Impact-Pack) 的一个分支，新增了 **Person 节点**：从群像照片里挑出指定的人，只重绘他们，而不是把画面里每个人都精修一遍。可以按编号挑、按性别挑、按角色名挑，也可以用大白话描述，比如"穿牛仔外套的那个男的"。
+
+除此之外，这个节点包与上游完全一致。上游原始说明（英文）见 [README.md](README.md)。
+
+## 这个分支加了什么
+
+  * **只重绘选中的人。** `Person Detector (SEGS)` 给画面里每个人编号，`Person Selector` 留下你要的那些，把他们的区域作为 SEGS 输出，交给包里原有的 `Detailer (SEGS)`。
+  * **四种挑人方式。** 编号（`2`、`1,3`、`2-4`、`-1` 表示最后一个）、性别、角色名、自由文本描述 —— 而且可以组合使用。
+  * **脸或全身。** `face_SEGS` 和 `person_SEGS` 两个独立输出，既可以只精修脸，也可以改一个人的衣服、发型和姿态。
+  * **不用额外下载 VLM。** 角色名和描述的匹配，跑在 Krea 2 工作流已经加载的 Qwen3-VL 文本编码器上。
+  * **为真实群像设计。** 能应付前后景深不同、身体互相遮挡、脸被挡住一半的情况：背景路人和糊掉的脸会被过滤，编号锚点从脸退到头、再退到身体，并且每个人的蒙版会挖掉其他已编号者的脸，重绘时不会糊到旁边的人身上。
+  * **可选的精细化。** 实例分割（`SEGM_DETECTOR`）或 SAM 让身体蒙版贴合轮廓；针对插画风格的图，还可以接动漫专用的人体/头部检测模型。
+
+## 前置要求
+
+  * [ComfyUI-Impact-Subpack](https://github.com/ltdrdata/ComfyUI-Impact-Subpack)，用于提供 `UltralyticsDetectorProvider`；并在 `models/ultralytics/` 下准备 `segm/person_yolov8m-seg.pt` 和 `bbox/face_yolov8m.pt` 两个模型。
+  * 可选，使用 `gender` / `description` / 角色名时需要：Krea 2 文本编码器（`CLIPLoader` 的 `type` 选 `krea2`，例如 `qwen3vl_4b_fp8_scaled.safetensors`）。
+  * 可选，处理动漫和插画时推荐：[deepghs](https://huggingface.co/deepghs) 的 `bbox/person_detect_v1.1_m.pt` 和 `bbox/head_detect_v2.0_s_yv11.pt`（MIT 协议）。需要把文件名加进 `ComfyUI/user/default/ComfyUI-Impact-Subpack/model-whitelist.txt`。
+  * 可选，需要贴合轮廓的身体蒙版时：任意 SAM 模型，通过 `SAMLoader` 加载（例如 `sams/sam_vit_b_01ec64.pth`）。
+
+安装方式与上游相同，见 [How To Install](README.md#how-to-install)。
+
+## 快速上手
+
+加载 `example_workflows/person_detailer.json`。它已经连好了下面这张图，并且同时演示了"重绘脸"和"重绘全身"两条分支：
+
+```
+UltralyticsDetectorProvider (person) ─┐
+UltralyticsDetectorProvider (face) ───┼─> Person Detector (SEGS) ─persons─> Person Selector ─face_SEGS──> Detailer (SEGS)
+LoadImage ────────────────────────────┘                    (same image) ─┘  └person_SEGS─> Detailer (SEGS)
+```
+
+  1. 把**同一张图**分别接到 `Person Detector (SEGS)` 和 `Person Selector` —— Selector 会核对尺寸，不一致会直接报错。
+  2. 在 `Person Selector` 上说明你要谁：`index`（例如 `2`）、`gender`，以及/或者 `description`（例如 `the woman in the red apron`）。全部留空则表示选所有人。
+  3. **只重绘脸**：把 `face_SEGS` 接到 `Detailer (SEGS)` 的 `segs` 输入。**重绘整个人**（衣服、姿态、发型、身体）：改接 `person_SEGS`。重绘全身时建议在 `Person Detector (SEGS)` 上接 `person_segm_detector` 或 `sam_model`，蒙版才会贴合人物轮廓而不是一个方框；`denoise` 取 0.5–0.6 时衣服变化明显，但选中者自己的脸也会跟着变，要保住脸就在之后单独再跑一遍脸部重绘。
+  4. 两个节点的 `preview` 输出可以看到编号和蒙版；Selector 的 `debug_text` 会给出检测/排除的数量，以及 VLM 的回答内容。
+
+## Person 节点说明
+
+  * `Person Detector (SEGS)` —— 检测画面里所有人和所有脸，把每张脸和它所属的身体关联起来（找不到身体时，会为这张脸合成一个近似的身体框），排除太小的、太靠后景的、太模糊的人，剩下的从左到右编号（可通过 `sort_by` 调整）。
+    * 必填：`image`、`person_detector` 和 `face_detector`（都是 `BBOX_DETECTOR`，例如用 `UltralyticsDetectorProvider` 加载 `segm/person_yolov8m-seg.pt` 和 `bbox/face_yolov8m.pt`）。所有接上的检测器（身体、SEGM、额外人体、头部、脸）共用同一个 `threshold`。
+    * 可选 `person_segm_detector`（`SEGM_DETECTOR`，例如与 `person_detector` 同一个 `UltralyticsDetectorProvider` 的 `SEGM_DETECTOR` 输出）：接上后身体检测切换为实例分割，每个人的全身区域是真实轮廓而不是矩形；它会取代 `person_detector`，后者将被忽略。
+    * 可选 `extra_person_detector`（`BBOX_DETECTOR`）和 `head_detector`（`BBOX_DETECTOR`）：`extra_person_detector` 是优先运行的额外人体检测器（动漫/插画推荐 `bbox/person_detect_v1.1_m.pt`），`person_segm_detector`/`person_detector` 的框只用来补它漏掉的人。`head_detector`（推荐 `bbox/head_detect_v2.0_s_yv11.pt`）检测头部，为看不到脸的人提供编号锚点、预览标签位置和 SAM 提示点；接上之后，`min_relative_size` 的比较对象也会随之改变。两个模型都来自 Hugging Face 用户 [deepghs](https://huggingface.co/deepghs)（MIT 协议）—— 下载到 `models/ultralytics/bbox/`，并把文件名加进 `ComfyUI/user/default/ComfyUI-Impact-Subpack/model-whitelist.txt`，`UltralyticsDetectorProvider` 才会加载它们。
+    * 可选 `sam_model`（`SAM_MODEL`）：为每个已编号的人跑一次 SAM 来细化身体蒙版，用这个人的脸（看不到脸时用头）作为正向点，用身体框内其他人的脸（或头）作为负向点；落在此人自己脸/头区域内的负向点会被跳过，以免让 SAM 把他自己的脸排除掉。
+    * 排除阈值与默认值：`min_person_ratio` 0.015（身体框面积占全图的比例）、`min_relative_size` 0.31（过滤背景路人 —— 逐人判定：该人检测到头就用头的短边比最大的头，否则用脸的短边比最大的脸，再否则用身体面积比最大者的平方根）、`min_face_size` 24 像素（脸框短边）、`min_sharpness` 0 表示关闭（脸部裁剪的拉普拉斯方差，用于过滤模糊的背景人物）。
+    * 存过的 v1 工作流会沿用旧的控件值（`min_person_ratio` 0.02、`min_relative_size` 0.25）；由于尺寸度量改成了线性方式，请改为 0.015 / 0.31。
+    * 输出 `persons`（`PERSONS`，接给 `Person Selector`）和 `preview`（`IMAGE`）：每个已编号者的全身蒙版以半透明形式叠在原图上，用其编号对应的颜色着色，编号标签放在脸（或头）的上方；某人的蒙版会自动挖掉其他**已编号**者（外扩 15% 的）脸部区域 —— 看不到脸时则是头部区域 —— 这样身体重叠时不会互相渗透；被排除的人不参与挖除。被排除者显示为灰框而非蒙版，并标注 `xS`（太小）、`xBG`（背景）、`xF`（脸太小）或 `xB`（太模糊）。
+    * 编号方式（`sort_by`）：默认 `left_to_right` 按脸的中心排序，没有脸时退回头的中心，两者都没有时用身体框的中心。
+  * `Person Selector` —— 从 `Person Detector (SEGS)` 编号过的人里选出一部分，把他们的脸和身体区域作为 SEGS 输出，可直接接 `Detailer (SEGS)`。
+    * `index`：从 1 开始、用逗号分隔的编号，例如 `2`、`1,3`、`2-4`，或用 `-1` 表示最后一个人；留空表示选所有人。
+    * `gender`（`any`/`male`/`female`）和 `description`（自由文本，虚构角色可以直接写角色名 —— 真实人物只按描述匹配，不做身份识别）需要在 `clip` 上接 Krea 2 文本编码器（`CLIPLoader` 的 `type` 设为 `krea2`，例如 `qwen3vl_4b_fp8_scaled.safetensors`）；节点会在图上画出带编号的框，让 VLM 挑出符合条件的编号。可选的 `verify` 会把每个挑中的人单独裁出来复核 —— 其他人的身体蒙版涂成灰色，确保 VLM 只看被挑中的这个人 —— 只保留得分高于 `verify_threshold` 的结果。
+    * `image` 必须与接给 `Person Detector (SEGS)` 的是同一张图 —— 节点会核对尺寸，不一致就报错。
+    * 输出 `face_SEGS`/`person_SEGS`（选中的）和 `remained_face_SEGS`/`remained_person_SEGS`（已编号但未被选中的），一个 `preview` 图像，以及一个 `debug_text` 字符串，内含检测/排除的数量和 VLM 的推理过程。
+    * 注意事项：被 `Person Detector (SEGS)` 排除的人，既不在选中的 SEGS 里，也不在 remained 的 SEGS 里 —— 他们被完全丢弃。当某个选中的人没有检测到脸时，`face_SEGS` 和 `person_SEGS` 的位置不是一一对应的（这个人只是不出现在 `face_SEGS` 里）。
