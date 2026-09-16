@@ -85,6 +85,14 @@ Every image below was produced by `example_workflows/person_detailer.json` on th
 | --- | --- |
 | ![Original cafe photo](docs/images/body-before.jpg) | ![The selected man now wears a pink top under his denim jacket](docs/images/body-after.jpg) |
 
+**5. Where it breaks** - the same face pass, same settings as example 3, but run on person 4: her face is in profile and partly hidden behind the woman in front of her. The detailer rebuilt that crop as a single frontal eye, following the prompt's *bright blue eyes* with almost nothing of the original face to anchor on.
+
+| Before | After |
+| --- | --- |
+| ![The woman in the red headscarf, face in profile](docs/images/limit-profile-before.jpg) | ![Her face rebuilt as one large frontal eye](docs/images/limit-profile-after.jpg) |
+
+Faces that are in profile, heavily occluded, or only a few dozen pixels across are this node pack's weak spot, as they are for `FaceDetailer` itself. Lower the `denoise`, write a prompt that does not demand features the crop cannot show, or leave those people out of the selection.
+
 ## Person nodes reference
 
   * `Person Detector (SEGS)` - Detects every person and every face in the image, associates each face with the body it belongs to (or synthesizes an approximate body box for an orphan face), excludes people who are too small, too far in the background, or too blurry, and numbers the rest left-to-right (configurable via `sort_by`).
