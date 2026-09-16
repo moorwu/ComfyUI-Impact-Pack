@@ -1,6 +1,6 @@
 [English](README.md) | **简体中文** | [日本語](README.ja.md)
 
-# ComfyUI-Impact-Pack - Person Detailer 分支
+# ComfyUI-Impact-Pack-Person-Selector
 
 [ltdrdata/ComfyUI-Impact-Pack](https://github.com/ltdrdata/ComfyUI-Impact-Pack) 的一个分支，新增了 **Person 节点**：从群像照片里挑出指定的人，只重绘他们，而不是把画面里每个人都精修一遍。可以按编号挑、按性别挑、按角色名挑，也可以用大白话描述，比如"穿牛仔外套的那个男的"。
 
@@ -22,7 +22,7 @@
   * 可选，处理动漫和插画时推荐：[deepghs](https://huggingface.co/deepghs) 的 `bbox/person_detect_v1.1_m.pt` 和 `bbox/head_detect_v2.0_s_yv11.pt`（MIT 协议）。需要把文件名加进 `ComfyUI/user/default/ComfyUI-Impact-Subpack/model-whitelist.txt`。
   * 可选，需要贴合轮廓的身体蒙版时：任意 SAM 模型，通过 `SAMLoader` 加载（例如 `sams/sam_vit_b_01ec64.pth`）。
 
-安装方式与上游相同，见 [How To Install](README.md#how-to-install)。
+安装方式与上游相同，见 [How To Install](README.md#how-to-install)，把地址换成本仓库即可。请用它**替换**上游那个包，不要两个同时装 —— 二者注册的节点名相同，ComfyUI 只会加载其中一个。上游说明里写的目录名是 `ComfyUI-Impact-Pack`，在这个 fork 下就是你克隆本仓库时用的目录名。
 
 ## 快速上手
 

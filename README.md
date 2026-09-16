@@ -1,6 +1,6 @@
 **English** | [简体中文](README.zh-CN.md) | [日本語](README.ja.md)
 
-# ComfyUI-Impact-Pack - Person Detailer fork
+# ComfyUI-Impact-Pack-Person-Selector
 
 A fork of [ltdrdata/ComfyUI-Impact-Pack](https://github.com/ltdrdata/ComfyUI-Impact-Pack) that adds **Person nodes**: pick specific people out of a group photo and redraw only them, instead of detailing everyone in the image. Pick them by number, by gender, by character name, or by a plain-language description such as "the man wearing a denim jacket".
 
@@ -22,7 +22,7 @@ Everything else in this pack is unchanged from upstream - the original README fo
   * Optional, for anime and illustrated images: `bbox/person_detect_v1.1_m.pt` and `bbox/head_detect_v2.0_s_yv11.pt` from [deepghs](https://huggingface.co/deepghs) (MIT). Add their filenames to `ComfyUI/user/default/ComfyUI-Impact-Subpack/model-whitelist.txt`.
   * Optional, for silhouette-accurate body masks: any SAM model via `SAMLoader` (e.g. `sams/sam_vit_b_01ec64.pth`).
 
-Installation is the same as upstream - see [How To Install](#how-to-install).
+Installation is the same as upstream - see [How To Install](#how-to-install), using this repository's URL. Install it *instead of* the upstream pack, not alongside it: both register the same node names, so ComfyUI would load only one of them. The upstream instructions below refer to the folder as `ComfyUI-Impact-Pack`; here it is whatever you cloned this repository into.
 
 ## Quick start
 

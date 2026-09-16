@@ -1,6 +1,6 @@
 [English](README.md) | [简体中文](README.zh-CN.md) | **日本語**
 
-# ComfyUI-Impact-Pack - Person Detailer フォーク
+# ComfyUI-Impact-Pack-Person-Selector
 
 [ltdrdata/ComfyUI-Impact-Pack](https://github.com/ltdrdata/ComfyUI-Impact-Pack) のフォークで、**Person ノード**を追加したものです。集合写真から特定の人物だけを選び、その人だけを描き直します（画像内の全員をディテールアップするのではありません）。選び方は、番号、性別、キャラクター名、あるいは「デニムジャケットを着た男性」のような自然な文章での指定です。
 
@@ -22,7 +22,7 @@
   * 任意（アニメ・イラスト画像の場合）: [deepghs](https://huggingface.co/deepghs) の `bbox/person_detect_v1.1_m.pt` と `bbox/head_detect_v2.0_s_yv11.pt`（MIT ライセンス）。ファイル名を `ComfyUI/user/default/ComfyUI-Impact-Subpack/model-whitelist.txt` に追記してください。
   * 任意（シルエットに沿った身体マスクが必要な場合）: `SAMLoader` で読み込める任意の SAM モデル（例: `sams/sam_vit_b_01ec64.pth`）。
 
-インストール方法は上流版と同じです。[How To Install](README.md#how-to-install) を参照してください。
+インストール方法は上流版と同じです。URL を本リポジトリに置き換えて [How To Install](README.md#how-to-install) を参照してください。上流のパックと**併用せず、置き換えて**インストールしてください。両者は同じノード名を登録するため、ComfyUI はどちらか一方しか読み込みません。上流の手順にあるフォルダ名 `ComfyUI-Impact-Pack` は、本フォークでは本リポジトリをクローンしたフォルダ名に読み替えてください。
 
 ## クイックスタート
 
