@@ -24,6 +24,28 @@
 
 安装方式与上游相同，见 [How To Install](README.md#how-to-install)，把地址换成本仓库即可。请用它**替换**上游那个包，不要两个同时装 —— 二者注册的节点名相同，ComfyUI 只会加载其中一个。上游说明里写的目录名是 `ComfyUI-Impact-Pack`，在这个 fork 下就是你克隆本仓库时用的目录名。
 
+## 模型下载
+
+| 模型 | 放在哪里 | 下载地址 |
+| --- | --- | --- |
+| `person_yolov8m-seg.pt` | `ComfyUI/models/ultralytics/segm/` | [Bingsu/adetailer](https://huggingface.co/Bingsu/adetailer/resolve/main/person_yolov8m-seg.pt) |
+| `face_yolov8m.pt` | `ComfyUI/models/ultralytics/bbox/` | [Bingsu/adetailer](https://huggingface.co/Bingsu/adetailer/resolve/main/face_yolov8m.pt) |
+| `person_detect_v1.1_m.pt`（可选，动漫用） | `ComfyUI/models/ultralytics/bbox/` | [deepghs/anime_person_detection](https://huggingface.co/deepghs/anime_person_detection/resolve/main/person_detect_v1.1_m/model.pt)（MIT） |
+| `head_detect_v2.0_s_yv11.pt`（可选，动漫用） | `ComfyUI/models/ultralytics/bbox/` | [deepghs/anime_head_detection](https://huggingface.co/deepghs/anime_head_detection/resolve/main/head_detect_v2.0_s_yv11/model.pt)（MIT） |
+| `sam_vit_b_01ec64.pth`（可选） | `ComfyUI/models/sams/` | [segment-anything](https://dl.fbaipublicfiles.com/segment_anything/sam_vit_b_01ec64.pth) |
+| `qwen3vl_4b_fp8_scaled.safetensors`（可选，用 `gender` / `description` 时必需） | `ComfyUI/models/text_encoders/` | Krea 2 的文本编码器 —— 如果你本来就在跑 Krea 2 工作流，这个文件已经有了 |
+
+deepghs 的两个模型在 Hugging Face 上都叫 `model.pt`、各自放在版本目录里，所以**下载时必须改名**。另外这两个文件名还要加进 Impact-Subpack 的白名单，`UltralyticsDetectorProvider` 才会列出它们：
+
+```bash
+cd ComfyUI/models/ultralytics/bbox
+curl -L -o person_detect_v1.1_m.pt https://huggingface.co/deepghs/anime_person_detection/resolve/main/person_detect_v1.1_m/model.pt
+curl -L -o head_detect_v2.0_s_yv11.pt https://huggingface.co/deepghs/anime_head_detection/resolve/main/head_detect_v2.0_s_yv11/model.pt
+printf 'person_detect_v1.1_m.pt\nhead_detect_v2.0_s_yv11.pt\n' >> ../../../user/default/ComfyUI-Impact-Subpack/model-whitelist.txt
+```
+
+加完模型后重启 ComfyUI，加载器才会认到。
+
 ## 快速上手
 
 加载 `example_workflows/person_detailer.json`。它已经连好了下面这张图，并且同时演示了"重绘脸"和"重绘全身"两条分支：
@@ -38,6 +60,30 @@ LoadImage ───────────────────────�
   2. 在 `Person Selector` 上说明你要谁：`index`（例如 `2`）、`gender`，以及/或者 `description`（例如 `the woman in the red apron`）。全部留空则表示选所有人。
   3. **只重绘脸**：把 `face_SEGS` 接到 `Detailer (SEGS)` 的 `segs` 输入。**重绘整个人**（衣服、姿态、发型、身体）：改接 `person_SEGS`。重绘全身时建议在 `Person Detector (SEGS)` 上接 `person_segm_detector` 或 `sam_model`，蒙版才会贴合人物轮廓而不是一个方框；`denoise` 取 0.5–0.6 时衣服变化明显，但选中者自己的脸也会跟着变，要保住脸就在之后单独再跑一遍脸部重绘。
   4. 两个节点的 `preview` 输出可以看到编号和蒙版；Selector 的 `debug_text` 会给出检测/排除的数量，以及 VLM 的回答内容。
+
+## 示例
+
+下面每张图都由 `example_workflows/person_detailer.json` 跑 `tests/person_fixtures_v2/` 里的测试图得到，这些测试图随仓库一起提供，你可以自己复现。
+
+**1. 检测与编号** —— `Person Detector (SEGS)` 的 `preview` 输出。这张错落站位的合影里找到 9 个人，每人一张按其编号配色的全身蒙版，编号标在脸的上方。
+
+![检测预览：9 个人各有带色蒙版和编号](docs/images/detect-preview.jpg)
+
+**2. 选人** —— `Person Selector` 的 `preview` 输出，`description` 填的是 *the woman in the red graduation gown holding a bouquet*（穿红色学士袍、抱着花束的女士）。VLM 选中了 2 号（绿色框），其余人保持灰色、原样输出。
+
+![选人预览：2 号被绿框标出，其余为灰色](docs/images/selection-preview.jpg)
+
+**3. 重绘脸** —— `face_SEGS` 接 `Detailer (SEGS)`，提示词为 *close-up portrait of a face with bright blue eyes and a big open smile, detailed skin*（蓝眼睛、灿烂笑容的面部特写）。只有 2 号的脸被重采样，另外 8 人保持不变。
+
+| 重绘前 | 重绘后 |
+| --- | --- |
+| ![原始合影](docs/images/face-before.jpg) | ![只有被选中女士的脸被重绘](docs/images/face-after.jpg) |
+
+**4. 重绘全身** —— `person_SEGS` 接 `Detailer (SEGS)`，提示词为 *a person wearing a bright pink outfit, detailed clothing*（穿亮粉色衣服），`denoise` 取 0.6。只有被选中男士的衣着变了，他身旁两人和背景里的咖啡师都没有受影响。
+
+| 重绘前 | 重绘后 |
+| --- | --- |
+| ![原始咖啡馆照片](docs/images/body-before.jpg) | ![被选中的男士牛仔外套里换成了粉色上衣](docs/images/body-after.jpg) |
 
 ## Person 节点说明
 

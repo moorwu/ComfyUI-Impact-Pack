@@ -24,6 +24,28 @@ Everything else in this pack is unchanged from upstream - the original README fo
 
 Installation is the same as upstream - see [How To Install](#how-to-install), using this repository's URL. Install it *instead of* the upstream pack, not alongside it: both register the same node names, so ComfyUI would load only one of them. The upstream instructions below refer to the folder as `ComfyUI-Impact-Pack`; here it is whatever you cloned this repository into.
 
+## Models
+
+| Model | Put it in | Download |
+| --- | --- | --- |
+| `person_yolov8m-seg.pt` | `ComfyUI/models/ultralytics/segm/` | [Bingsu/adetailer](https://huggingface.co/Bingsu/adetailer/resolve/main/person_yolov8m-seg.pt) |
+| `face_yolov8m.pt` | `ComfyUI/models/ultralytics/bbox/` | [Bingsu/adetailer](https://huggingface.co/Bingsu/adetailer/resolve/main/face_yolov8m.pt) |
+| `person_detect_v1.1_m.pt` *(optional, for anime)* | `ComfyUI/models/ultralytics/bbox/` | [deepghs/anime_person_detection](https://huggingface.co/deepghs/anime_person_detection/resolve/main/person_detect_v1.1_m/model.pt) (MIT) |
+| `head_detect_v2.0_s_yv11.pt` *(optional, for anime)* | `ComfyUI/models/ultralytics/bbox/` | [deepghs/anime_head_detection](https://huggingface.co/deepghs/anime_head_detection/resolve/main/head_detect_v2.0_s_yv11/model.pt) (MIT) |
+| `sam_vit_b_01ec64.pth` *(optional)* | `ComfyUI/models/sams/` | [segment-anything](https://dl.fbaipublicfiles.com/segment_anything/sam_vit_b_01ec64.pth) |
+| `qwen3vl_4b_fp8_scaled.safetensors` *(optional, needed for `gender` / `description`)* | `ComfyUI/models/text_encoders/` | the Krea 2 text encoder - if you already run Krea 2 workflows you have this file |
+
+Both deepghs models are published as `model.pt` inside a per-version folder, so rename them as you download. Their filenames also have to be added to the Impact-Subpack whitelist before `UltralyticsDetectorProvider` will offer them:
+
+```bash
+cd ComfyUI/models/ultralytics/bbox
+curl -L -o person_detect_v1.1_m.pt https://huggingface.co/deepghs/anime_person_detection/resolve/main/person_detect_v1.1_m/model.pt
+curl -L -o head_detect_v2.0_s_yv11.pt https://huggingface.co/deepghs/anime_head_detection/resolve/main/head_detect_v2.0_s_yv11/model.pt
+printf 'person_detect_v1.1_m.pt\nhead_detect_v2.0_s_yv11.pt\n' >> ../../../user/default/ComfyUI-Impact-Subpack/model-whitelist.txt
+```
+
+Restart ComfyUI after adding models so the loader picks them up.
+
 ## Quick start
 
 Load `example_workflows/person_detailer.json`. It wires the graph below and shows both a face branch and a whole-body branch:
@@ -38,6 +60,30 @@ LoadImage ───────────────────────�
   2. Say who you want on `Person Selector`: `index` (e.g. `2`), `gender`, and/or `description` (e.g. `the woman in the red apron`). Leave them empty to select everyone.
   3. To redraw only the selected people's faces, connect `face_SEGS` to `Detailer (SEGS)` (`segs` input). To redraw whole people (clothing, pose, hair, body), connect `person_SEGS` instead. For whole-body redraws connect `person_segm_detector` and/or `sam_model` on `Person Detector (SEGS)` so the mask follows the person's silhouette instead of a rectangle; a `denoise` around 0.5–0.6 changes clothing noticeably and also changes the selected person's own face, so run a separate face pass afterwards if the face must be preserved. `example_workflows/person_detailer.json` includes both a face branch and a whole-body branch.
   4. Check the `preview` output of either node to see the numbering and the masks, and `debug_text` on the Selector for detection counts and what the VLM answered.
+
+## Examples
+
+Every image below was produced by `example_workflows/person_detailer.json` on the test images in `tests/person_fixtures_v2/`, which are included in this repository so you can reproduce them.
+
+**1. Detection and numbering** - the `preview` output of `Person Detector (SEGS)`. Nine people are found in a staggered group shot; each gets a body mask tinted in their own colour and a number above their face.
+
+![Detection preview: nine people, each with a coloured body mask and a number](docs/images/detect-preview.jpg)
+
+**2. Selection** - the `preview` output of `Person Selector` for `description` = *the woman in the red graduation gown holding a bouquet*. The VLM picked person 2 (green); everyone else stays grey and is passed through untouched.
+
+![Selection preview: person 2 outlined in green, the rest grey](docs/images/selection-preview.jpg)
+
+**3. Face redraw** - `face_SEGS` into `Detailer (SEGS)` with the prompt *close-up portrait of a face with bright blue eyes and a big open smile, detailed skin*. Only person 2's face is resampled; the other eight people are left as they were.
+
+| Before | After |
+| --- | --- |
+| ![Original group photo](docs/images/face-before.jpg) | ![Only the selected woman's face redrawn](docs/images/face-after.jpg) |
+
+**4. Whole-body redraw** - `person_SEGS` into `Detailer (SEGS)` with the prompt *a person wearing a bright pink outfit, detailed clothing* at `denoise` 0.6. The selected man's clothing changes; the two people beside him and the barista in the background do not.
+
+| Before | After |
+| --- | --- |
+| ![Original cafe photo](docs/images/body-before.jpg) | ![The selected man now wears a pink top under his denim jacket](docs/images/body-after.jpg) |
 
 ## Person nodes reference
 

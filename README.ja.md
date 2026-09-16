@@ -24,6 +24,28 @@
 
 インストール方法は上流版と同じです。URL を本リポジトリに置き換えて [How To Install](README.md#how-to-install) を参照してください。上流のパックと**併用せず、置き換えて**インストールしてください。両者は同じノード名を登録するため、ComfyUI はどちらか一方しか読み込みません。上流の手順にあるフォルダ名 `ComfyUI-Impact-Pack` は、本フォークでは本リポジトリをクローンしたフォルダ名に読み替えてください。
 
+## モデルのダウンロード
+
+| モデル | 置き場所 | ダウンロード |
+| --- | --- | --- |
+| `person_yolov8m-seg.pt` | `ComfyUI/models/ultralytics/segm/` | [Bingsu/adetailer](https://huggingface.co/Bingsu/adetailer/resolve/main/person_yolov8m-seg.pt) |
+| `face_yolov8m.pt` | `ComfyUI/models/ultralytics/bbox/` | [Bingsu/adetailer](https://huggingface.co/Bingsu/adetailer/resolve/main/face_yolov8m.pt) |
+| `person_detect_v1.1_m.pt`（任意・アニメ向け） | `ComfyUI/models/ultralytics/bbox/` | [deepghs/anime_person_detection](https://huggingface.co/deepghs/anime_person_detection/resolve/main/person_detect_v1.1_m/model.pt)（MIT） |
+| `head_detect_v2.0_s_yv11.pt`（任意・アニメ向け） | `ComfyUI/models/ultralytics/bbox/` | [deepghs/anime_head_detection](https://huggingface.co/deepghs/anime_head_detection/resolve/main/head_detect_v2.0_s_yv11/model.pt)（MIT） |
+| `sam_vit_b_01ec64.pth`（任意） | `ComfyUI/models/sams/` | [segment-anything](https://dl.fbaipublicfiles.com/segment_anything/sam_vit_b_01ec64.pth) |
+| `qwen3vl_4b_fp8_scaled.safetensors`（任意・`gender` / `description` に必要） | `ComfyUI/models/text_encoders/` | Krea 2 のテキストエンコーダー。Krea 2 のワークフローを使っているなら既に持っています |
+
+deepghs の 2 つのモデルは、Hugging Face 上ではバージョンごとのフォルダ内に `model.pt` という名前で公開されています。**ダウンロード時にリネームしてください。** さらに、`UltralyticsDetectorProvider` の一覧に出すには、両方のファイル名を Impact-Subpack のホワイトリストに追加する必要があります。
+
+```bash
+cd ComfyUI/models/ultralytics/bbox
+curl -L -o person_detect_v1.1_m.pt https://huggingface.co/deepghs/anime_person_detection/resolve/main/person_detect_v1.1_m/model.pt
+curl -L -o head_detect_v2.0_s_yv11.pt https://huggingface.co/deepghs/anime_head_detection/resolve/main/head_detect_v2.0_s_yv11/model.pt
+printf 'person_detect_v1.1_m.pt\nhead_detect_v2.0_s_yv11.pt\n' >> ../../../user/default/ComfyUI-Impact-Subpack/model-whitelist.txt
+```
+
+モデルを追加したら、ローダーに認識させるため ComfyUI を再起動してください。
+
 ## クイックスタート
 
 `example_workflows/person_detailer.json` を読み込んでください。下図の接続が済んでおり、「顔だけ」と「全身」の 2 系統のブランチが両方入っています。
@@ -38,6 +60,30 @@ LoadImage ───────────────────────�
   2. `Person Selector` で対象を指定します: `index`（例: `2`）、`gender`、`description`（例: `the woman in the red apron`）。すべて空にすると全員が選ばれます。
   3. **顔だけを描き直す**場合は `face_SEGS` を `Detailer (SEGS)` の `segs` 入力へ。**人物全体を描き直す**（服・ポーズ・髪・身体）場合は代わりに `person_SEGS` を接続します。全身の描き直しでは `Person Detector (SEGS)` に `person_segm_detector` または `sam_model` を接続してください。マスクが矩形ではなく人物のシルエットに沿うようになります。`denoise` を 0.5〜0.6 程度にすると服の変化がはっきり出ますが、選んだ人物自身の顔も一緒に変わります。顔を保ちたい場合は、その後に顔だけのパスをもう一度実行してください。
   4. どちらのノードの `preview` 出力でも採番とマスクを確認できます。Selector の `debug_text` には検出・除外の件数と VLM の回答が入っています。
+
+## 実例
+
+以下の画像はすべて、本リポジトリに含まれるテスト画像（`tests/person_fixtures_v2/`）に対して `example_workflows/person_detailer.json` を実行した結果です。手元でも再現できます。
+
+**1. 検出と採番** — `Person Detector (SEGS)` の `preview` 出力。前後にばらけた集合写真から 9 人を検出し、それぞれに番号ごとの色を付けた全身マスクと、顔の上に番号ラベルが付きます。
+
+![検出プレビュー: 9 人それぞれに色付きマスクと番号](docs/images/detect-preview.jpg)
+
+**2. 人物の選択** — `Person Selector` の `preview` 出力。`description` に *the woman in the red graduation gown holding a bouquet*（赤い学位ガウンで花束を持つ女性）を指定した例です。VLM は 2 番を選び（緑）、他の人物は灰色のまま手を加えずに通します。
+
+![選択プレビュー: 2 番が緑で囲まれ、他は灰色](docs/images/selection-preview.jpg)
+
+**3. 顔の描き直し** — `face_SEGS` を `Detailer (SEGS)` へ。プロンプトは *close-up portrait of a face with bright blue eyes and a big open smile, detailed skin*（明るい青い瞳と満面の笑みの顔のクローズアップ）。再サンプリングされるのは 2 番の顔だけで、他の 8 人はそのまま残ります。
+
+| 変更前 | 変更後 |
+| --- | --- |
+| ![元の集合写真](docs/images/face-before.jpg) | ![選ばれた女性の顔だけが描き直された画像](docs/images/face-after.jpg) |
+
+**4. 全身の描き直し** — `person_SEGS` を `Detailer (SEGS)` へ。プロンプトは *a person wearing a bright pink outfit, detailed clothing*（鮮やかなピンクの服）、`denoise` は 0.6。選ばれた男性の服装だけが変わり、隣の 2 人も背景のバリスタも影響を受けていません。
+
+| 変更前 | 変更後 |
+| --- | --- |
+| ![元のカフェの写真](docs/images/body-before.jpg) | ![選ばれた男性がデニムジャケットの下にピンクのトップスを着ている画像](docs/images/body-after.jpg) |
 
 ## Person ノード リファレンス
 
